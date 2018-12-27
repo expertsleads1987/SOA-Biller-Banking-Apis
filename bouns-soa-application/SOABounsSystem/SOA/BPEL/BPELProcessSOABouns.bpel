@@ -1,0 +1,294 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Wed Dec 26 13:40:37 IST 2018
+  Author:  yousef
+  Type: BPEL 2.0 Process
+  Purpose: Synchronous BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="BPELProcessSOABouns"
+               targetNamespace="http://xmlns.oracle.com/bouns_soa_application/SOABounsSystem/BPELProcessSOABouns"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/bouns_soa_application/SOABounsSystem/BPELProcessSOABouns"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+         xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns1="http://xmlns.oracle.com/pcbpel/adapter/db/bouns-soa-application/SOABounsSystem/dbReference"
+         xmlns:ns2="http://tempuri.org/" xmlns:ns3="http://www.example.org"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns:oraext="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+         xmlns:bpm="http://xmlns.oracle.com/bpmn20/extensions"
+         xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+         xmlns:ess="http://xmlns.oracle.com/scheduler" xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+         xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+         xmlns:dvm="http://www.oracle.com/XSL/Transform/java/oracle.tip.dvm.LookupValue"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+         xmlns:xdk="http://schemas.oracle.com/bpel/extension/xpath/function/xdk"
+         xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+         xmlns:ldap="http://schemas.oracle.com/xpath/extension/ldap"
+         xmlns:ns4="http://xmlns.oracle.com/pcbpel/adapter/db/sp/dbReference"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <import ui:processWSDL="true" namespace="http://xmlns.oracle.com/bouns_soa_application/SOABounsSystem/BPELProcessSOABouns" location="../WSDLs/BPELProcessSOABouns.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <!-- 
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        PARTNERLINKS                                                      
+        List of services participating in this BPEL process               
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="bpelprocesssoabouns_client" partnerLinkType="client:BPELProcessSOABouns" myRole="BPELProcessSOABounsProvider"/>
+    <partnerLink name="dbReference" partnerLinkType="ns1:dbReference_plt" partnerRole="dbReference_role"/>
+    <partnerLink name="SOAPReference" partnerLinkType="ns2:SOAPReference" partnerRole="GenerateServiceSoap"
+                 myRole="GenerateServiceSoap"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:BPELProcessSOABounsRequestMessage"/>
+
+    <!-- Reference to the message that will be returned to the requester-->
+    <variable name="outputVariable" messageType="client:BPELProcessSOABounsResponseMessage"/>
+    <variable name="ErrorBusCode" type="xsd:string"/>
+    <variable name="ErrorBusMessage" type="xsd:string"/>
+    <variable name="ErrorTechCode" type="xsd:string"/>
+    <variable name="ErrorTechMessage" type="xsd:string"/>
+    <variable name="ErrorTechDetails" type="xsd:string"/>
+    <variable name="ExecutionStatus" type="xsd:string"/>
+    <variable name="Invoke1_dbReference_InputVariable" messageType="ns1:args_in_msg"/>
+    <variable name="Invoke1_dbReference_OutputVariable" messageType="ns1:args_out_msg"/>
+    <variable name="Invoke2_Generate_InputVariable" messageType="ns2:GenerateSoapIn"/>
+    <variable name="Invoke2_Generate_OutputVariable" messageType="ns2:GenerateSoapOut"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in BPELProcessSOABouns.wsdl) --><receive name="receiveInput" partnerLink="bpelprocesssoabouns_client" portType="client:BPELProcessSOABouns" operation="process" variable="inputVariable" createInstance="yes"/>
+    <assign name="AssignInputs">
+      <copy>
+        <from>$inputVariable.payload/ns3:MessageHeader/ns3:TransactionID</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageHeader/ns3:TransactionID</to>
+      </copy>
+      <copy>
+        <from>$inputVariable.payload/ns3:MessageBody/ns3:TransactionInformation/ns3:EntitlementDate</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$inputVariable.payload/ns3:MessageBody/ns3:TransactionInformation/ns3:EntitlementDate</to>
+      </copy>
+      <copy>
+        <from>$inputVariable.payload/ns3:MessageHeader/ns3:ApplicationUserName</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$inputVariable.payload/ns3:MessageHeader/ns3:ApplicationUserName</to>
+      </copy>
+      <copy>
+        <from>$inputVariable.payload/ns3:MessageHeader/ns3:ApplicationCode</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$inputVariable.payload/ns3:MessageHeader/ns3:ApplicationCode</to>
+      </copy>
+      <copy>
+        <from>$inputVariable.payload/ns3:MessageHeader/ns3:TransactionID</from>
+        <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$inputVariable.payload/ns3:MessageHeader/ns3:TransactionID</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="Java_Embedding1">
+        <![CDATA[//Mandatory Elements validation           
+try {            
+ java.net.InetAddress ipAddress = java.net            
+                                      .InetAddress            
+                                      .getLocalHost();            
+ String clientIp = (ipAddress.getHostAddress()).trim();            
+       
+ String compositeName = (String) getVariableData("CompositeName");            
+ String transactionID =            
+     ((org.w3c.dom.Element) getVariableData("inputVariable", "payload", "//ns2:TransactionID"))            
+     .getTextContent();            
+ String applicationCode =            
+     ((org.w3c.dom.Element) getVariableData("inputVariable", "payload", "//ns2:ApplicationCode"))            
+     .getTextContent();            
+ String applicationUserName =            
+     ((org.w3c.dom.Element) getVariableData("inputVariable", "payload", "//ns2:ApplicationUserName"))            
+     .getTextContent();            
+           
+        
+  String EntitlementDate = ((org.w3c.dom.Element) getVariableData("inputVariable", "payload", "//ns2:EntitlementDate")).getTextContent();        
+   
+        
+          
+             
+ String MandatoryField = null;            
+       
+ if (transactionID.equals("")) {            
+     MandatoryField = "TransactionID";            
+ } else if (applicationCode.equals("")) {            
+     MandatoryField = "ApplicationCode";            
+ } else if (applicationUserName.equals("")) {            
+     MandatoryField = "ApplicationUserName";            
+ } else if("".equals(EntitlementDate)){MandatoryField = "EntitlementDate";}         
+         
+       
+         
+       
+ if (MandatoryField != null) {            
+     setVariableData("ExecutionStatus", "F");            
+     setVariableData("outputVariable", "payload", "//ns2:Status", "Failed");            
+     setVariableData("ErrorBusCode", "VF0001");            
+     setVariableData("ErrorBusMessage",            
+                     "Validation Fault : Unable to FulFill Transaction, Entry [ " + MandatoryField +            
+                     " ] is Mandatory.");            
+     setVariableData("ErrorTechCode", "OFM-VAL-0001");            
+     setVariableData("ErrorTechMessage", "Entry [ " + MandatoryField + " ] is Mandatory.");            
+ } else {            
+     com.dimensions.mw.utils.validationManagement.ValidationManager validationManager =            
+         new com.dimensions.mw.utils.validationManagement.ValidationManager();            
+     String validationCheck =            
+         validationManager.ApplyValidation(applicationCode, compositeName, "isAllowedSource",            
+                                           compositeName + "###" + applicationCode + "###" + clientIp +            
+                                           "###" + "token" + "###" + applicationUserName);            
+       
+     if (validationCheck == null) {           
+      /*           
+         String attributesCheck =            
+             validationManager.ApplyValidation(applicationCode, compositeName, "validateAttributes",            
+                                               "UserId:Number" + ":" + userId);            
+         if (attributesCheck != null) {            
+             setVariableData("ExecutionStatus", "F");            
+             setVariableData("outputVariable", "payload", "//ns2:Status", "Failed");            
+             setVariableData("ErrorBusCode", attributesCheck.split("#")[0]);            
+             setVariableData("ErrorBusMessage", attributesCheck.split("#")[1].split("##")[0]);            
+             setVariableData("ErrorTechCode", attributesCheck.split("##")[1].split("###")[0]);            
+             setVariableData("ErrorTechMessage", attributesCheck.split("###")[1].split("###-")[0]);            
+             setVariableData("ErrorTechDetails", attributesCheck.split("###-")[1].split("#####")[0]);            
+         }          
+*/      
+               
+     } else {            
+         setVariableData("ExecutionStatus", "F");            
+         setVariableData("outputVariable", "payload", "//ns2:Status", "Failed");            
+         setVariableData("ErrorBusCode", validationCheck.split("#")[0]);            
+         setVariableData("ErrorBusMessage", validationCheck.split("#")[1].split("##")[0]);            
+         setVariableData("ErrorTechCode", validationCheck.split("##")[1].split("###")[0]);            
+         setVariableData("ErrorTechMessage", validationCheck.split("###")[1].split("###-")[0]);            
+         setVariableData("ErrorTechDetails", validationCheck.split("###-")[1].split("#####")[0]);            
+     }            
+ }            
+       
+} catch (Exception exc) {            
+ addAuditTrailEntry(exc);            
+ exc.printStackTrace();            
+}]]>
+      </bpelx:exec>
+    </extensionActivity>
+    <if name="If1">
+      <condition>$ExecutionStatus = 'S'</condition>
+      <sequence name="Sequence1">
+        <assign name="Success">
+          <copy>
+            <from>$inputVariable.payload/ns3:MessageHeader/ns3:TransactionID</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageHeader/ns3:TransactionID</to>
+          </copy>
+          <copy>
+            <from>"Success"</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:StatusInformation/ns3:Status</to>
+          </copy>
+        </assign>
+        <invoke name="Invoke1" partnerLink="dbReference" portType="ns1:dbReference_ptt"
+                operation="dbReference" inputVariable="Invoke1_dbReference_InputVariable"
+                outputVariable="Invoke1_dbReference_OutputVariable" bpelx:invokeAsDetail="no"/>
+        <assign name="FillResponse">
+          <copy>
+            <from>$Invoke1_dbReference_OutputVariable.OutputParameters/ns4:P_MAN_DEPT/ns4:P_MAN_DEPT_Row/ns4:EMP_ACNT_NO</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:TransactionInformation/ns3:EMP_ACNT_NO</to>
+          </copy>
+          <copy>
+            <from>$Invoke1_dbReference_OutputVariable.OutputParameters/ns4:P_MAN_DEPT/ns4:P_MAN_DEPT_Row/ns4:EMP_NAME_A</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:TransactionInformation/ns3:EMP_NAME_A</to>
+          </copy>
+          <copy>
+            <from>$Invoke1_dbReference_OutputVariable.OutputParameters/ns4:P_MAN_DEPT/ns4:P_MAN_DEPT_Row/ns4:ADM_BRN_CODE</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:TransactionInformation/ns3:ADM_BRN_CODE</to>
+          </copy>
+          <copy>
+            <from>$Invoke1_dbReference_OutputVariable.OutputParameters/ns4:P_MAN_DEPT/ns4:P_MAN_DEPT_Row/ns4:PROFESSION_DESC</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:TransactionInformation/ns3:PROFESSION_DESC</to>
+          </copy>
+          <copy>
+            <from>$Invoke1_dbReference_OutputVariable.OutputParameters/ns4:P_MAN_DEPT/ns4:P_MAN_DEPT_Row/ns4:RESPECT_DESC</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:TransactionInformation/ns3:RESPECT_DESC</to>
+          </copy>
+        </assign>
+        <invoke name="Invoke2" bpelx:invokeAsDetail="no" partnerLink="SOAPReference"
+                portType="ns2:GenerateServiceSoap" operation="Generate" inputVariable="Invoke2_Generate_InputVariable"
+                outputVariable="Invoke2_Generate_OutputVariable"/>
+      </sequence>
+      <else>
+        <assign name="Fail">
+          <copy>
+            <from>$inputVariable.payload/ns3:MessageHeader/ns3:TransactionID</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageHeader/ns3:TransactionID</to>
+          </copy>
+          <copy>
+            <from>$ErrorBusCode</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:ErrorInformation/ns3:ErrorBusCode</to>
+          </copy>
+          <copy>
+            <from>$ErrorBusCode</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:ErrorInformation/ns3:ErrorBusCode</to>
+          </copy>
+          <copy>
+            <from>$ErrorBusMessage</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:ErrorInformation/ns3:ErrorBusMessage</to>
+          </copy>
+          <copy>
+            <from>$ErrorBusMessage</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:ErrorInformation/ns3:ErrorBusMessage</to>
+          </copy>
+          <copy>
+            <from>$ErrorBusCode</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:ErrorInformation/ns3:ErrorBusCode</to>
+          </copy>
+          <copy>
+            <from>$ErrorTechCode</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:ErrorInformation/ns3:ErrorTechCode</to>
+          </copy>
+          <copy>
+            <from>$ErrorBusCode</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:ErrorInformation/ns3:ErrorBusCode</to>
+          </copy>
+          <copy>
+            <from>$ErrorBusMessage</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:ErrorInformation/ns3:ErrorBusMessage</to>
+          </copy>
+          <copy>
+            <from>$ErrorTechCode</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:ErrorInformation/ns3:ErrorTechCode</to>
+          </copy>
+          <copy>
+            <from>$ErrorTechDetails</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns3:MessageBody/ns3:ErrorInformation/ns3:ErrorTechlDetails</to>
+          </copy>
+        </assign>
+      </else>
+    </if>
+    <!-- Generate reply to synchronous request -->
+    <reply name="replyOutput" partnerLink="bpelprocesssoabouns_client" portType="client:BPELProcessSOABouns" operation="process" variable="outputVariable"/>
+  </sequence>
+</process>
